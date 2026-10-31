@@ -1,0 +1,31 @@
+# Keep only what's needed to reproduce the experiment; everything else stays local.
+/*
+!/.gitignore
+!/README.md
+!/config.toml
+!/intake/
+!/scripts/
+!/figures/
+!/docs/
+!/requirements/
+
+!/data/
+/data/*
+!/data/samples/
+
+!/runs/
+/runs/*
+!/runs/analysis.json
+
+# One-off scripts the README's results don't depend on
+/scripts/run_flash_block_AO.sh
+/scripts/human_labels.py
+/scripts/grade_figure_readings.py
+/scripts/phase0_resolution.py
+
+# Earlier sample files nothing reads; stage1.json is the sample
+/data/samples/stage1_initial.json
+/data/samples/stage1_backup_100.json
+
+__pycache__/
+.env

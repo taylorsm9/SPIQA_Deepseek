@@ -1,0 +1,62 @@
+# Fixed experiment configuration. Any change to [generation], [endpoints], [images] or [judge] means
+# rerunning the affected setups.
+
+[paths]
+spiqa = "data/spiqa"
+pdfs = "data/pdfs"
+mineru_out = "data/mineru"
+mineru_adv_out = "data/mineru_adv"   # advanced tier, image analysis on (figure descriptions only)
+ocr2_pipeline = "data/ocr2_pipeline"   # DeepSeek-OCR-2 run end to end on the PDFs (arm G only)
+inputs = "data/inputs"
+runs = "runs"
+samples = "data/samples"
+
+[sample]
+seed = 20261024
+# papers per SPIQA part
+stage1 = { A = 90, B = 65, C = 145 }   # 300 papers; test-B has only 65 in total
+stage1_initial = { A = 30, B = 25, C = 45 }   # a first, smaller draw that the full sample extends
+arm_n_questions = 150   # the no-paper setup answers this many
+flip_pilot_questions = 40   # images-setup pilot, run before the scored run
+dry_run_per_arm = 10
+vision_check_questions = 20
+
+[generation]
+# The same for every setup
+temperature = 1.0
+top_p = 0.95
+reasoning_effort = "high"
+max_output_tokens = 32768
+seeds = [42]   # one answer per question; precision comes from more papers
+concurrency = 6   # the most requests the Vision server takes at once
+request_timeout_s = 3600
+
+# Both models are served one at a time from the same address, DEEPSEEK_BASE_URL in .env (e.g. http://host:8888/v1).
+# Reasoning effort: the 0731 image's tokenizer maps "max" to the template text the 0731 model card calls
+# "high" (and "high" to no prefix at all), while Vision-Exp maps "high" correctly. Both values below put
+# the same "high" prefix in front of the model (84 prompt tokens for "hi" on both).
+[endpoints.flash]
+model = "deepseek-v4-flash-0731"
+extra_body = { chat_template_kwargs = { thinking = true, reasoning_effort = "max" } }
+
+[endpoints.vision]
+model = "deepseek-v4-flash-vision-exp"
+extra_body = { chat_template_kwargs = { thinking = true, reasoning_effort = "high" } }
+max_images = 32
+
+[images]
+# Tile any crop taller than tall_ratio x width, with overlap between tiles
+tall_ratio = 2.0
+tile_overlap = 0.10
+
+[judge]
+model_dir = "models/Qwen3.8-27B-W4A16-AutoRound"
+revision = "d31b835986575b27eda14d05f21e1f7f68610c6d"
+port = 8901
+max_model_len = 4096
+top_logprobs = 20
+correct_threshold = 0.5
+
+[analysis]
+ci = 0.95
+bootstrap_reps = 10000
